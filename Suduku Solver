@@ -1,35 +1,120 @@
-/* Parts =
-  1. Input Handling
-  2. Sudoku Solver Aspect
-  3. Final Output and Execution
-
-This is the Sudoku Solver Aspect
-
-Be sure to push your assigned part so we can merge it with main! Thats it!
+/* CSE_1320 Semester Project: Sudoku Solver
+    
+    //Input Handling and Initialization - Nrup Minesh Thaker
+    //Sudoku Solving Algorithm - Sheena Buwemi
+    //Final Execution and Output - Samarth Kansagara
+    
 
 */
 
-/* Solve the Sudoku puzzle using backtracking */
-int solve_sudoku(int i, int j)
-{
-    if (i == 9)
-    {
-        i = 0;
-        if (++j == 9)
-            return 1; // Sudoku solved successfully
-    }
-    if (known[i][j])
-        return solve_sudoku(i + 1, j);
+#include <stdio.h>
 
-    for (int n = 1; n <= 9; n++)
-    {
-        if (!(rows[i] & bits[n]) && !(cols[j] & bits[n]) && !(squares[square(i, j)] & bits[n]))
-        {
-            set_cell(i, j, n);
-            if (solve_sudoku(i + 1, j))
-                return 1; // Solution found
-            clear_cell(i, j);
+// Function to check if the given digit can be placed at the given position
+
+int isSafe(int grid[9][9], int row, int col, int num) {
+    // Check if the digit is already present in the current row or column
+    for (int i = 0; i < 9; i++) {
+        if (grid[row][i] == num || grid[i][col] == num) {
+            return 0;
         }
     }
-    return 0; // No solution found
+
+    // Check if the digit is already present in the current 3x3 subgrid
+    
+    int startRow = row - row % 3;
+    int startCol = col - col % 3;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (grid[i + startRow][j + startCol] == num) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+// Function to solve the Sudoku puzzle using backtracking
+
+int solveSudoku(int grid[9][9]) {
+    int row, col;
+
+    // Find an empty cell in the grid
+    int isEmpty = 1;
+    for (row = 0; row < 9; row++) {
+        for (col = 0; col < 9; col++) {
+            if (grid[row][col] == 0) {
+                isEmpty = 0;
+                break;
+            }
+        }
+        if (!isEmpty) {
+            break;
+        }
+    }
+
+    // If no empty cell is found, the puzzle is solved
+    if (isEmpty) {
+        return 1;
+    }
+
+    // Try placing digits 1 to 9 in the empty cell
+    for (int num = 1; num <= 9; num++) {
+        // Check if the digit can be placed at the current position
+        if (isSafe(grid, row, col, num)) {
+            // Place the digit
+            grid[row][col] = num;
+
+            // Recursively solve the rest of the puzzle
+            if (solveSudoku(grid)) {
+                return 1; // Puzzle solved
+            }
+
+            // If placing the digit does not lead to a solution, backtrack
+            grid[row][col] = 0;
+        }
+    }
+
+    // No solution found
+    return 0;
+}
+
+// Function to print the Sudoku grid
+void printGrid(int grid[9][9]) {
+    for (int row = 0; row < 9; row++) {
+        for (int col = 0; col < 9; col++) {
+            printf("%d ", grid[row][col]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    
+    //9 x 9 2D array
+    
+    int grid[9][9] = {
+        {5, 3, 0, 0, 7, 0, 0, 0, 0},
+        {6, 0, 0, 1, 9, 5, 0, 0, 0},
+        {0, 9, 8, 0, 0, 0, 0, 6, 0},
+        {8, 0, 0, 0, 6, 0, 0, 0, 3},
+        {4, 0, 0, 8, 0, 3, 0, 0, 1},
+        {7, 0, 0, 0, 2, 0, 0, 0, 6},
+        {0, 6, 0, 0, 0, 0, 2, 8, 0},
+        {0, 0, 0, 4, 1, 9, 0, 0, 5},
+        {0, 0, 0, 0, 8, 0, 0, 7, 9}
+    };
+
+
+    /* Sudoku Solver */
+    
+    if (solveSudoku(grid)) {
+        /* Final Execution: Print the solved Sudoku grid */
+        printf("Sudoku solved successfully:\n");
+        printGrid(grid);
+    } else {
+        printf("No solution exists for the given Sudoku puzzle.\n");
+    }
+
+    return 0;
 }
